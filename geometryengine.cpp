@@ -180,31 +180,39 @@ void GeometryEngine::initPlaneGeometry()
     // For plane, we need 8 vertices on the same plane z=0
     VertexData vertices[n*n] = {};
 
-    double incr = 2/n;
+    double incr = 2./n;
     for(int j = 0; j < n; j++) {
         for(int i = 0; i < n; i++) {
-            vertices[i+j*n] = {QVector3D(i*incr, j*incr, 0.0f), QVector2D(i*(1/n), j*(1/n))};
+            //vertices[i+j*n] = {QVector3D(i*incr, j*incr, 0.0f), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //sans Z
+            vertices[i+j*n] = {QVector3D(i*incr, j*incr, (i%2)*0.1), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //avec Z
+            std::cout << i+j*n << ";(" << i*(1./(n-1)) << "," <<j*(1./(n-1))<< ")|";
         }
+        std::cout << std::endl;
     }
-
-    GLushort indices[1348] = {};
+    std::cout << "indices" << std::endl;
+    GLushort indices[n*n*n] = {};
     // bg, bd, hg, hd
     // 16, 0, 17, 1, ... n, n : one line
 
-
-    //todo : ici
-    for(int j = 0; j < n; j++) {
-        indices[j*n*2] = (j+1)*n;
-        for(int i = 1; i < n+1; i++) {
-            indices[i+j*n]     = (j+1)*n;
-            indices[(i+1)+j*n] = i+j*n;
+    int offset = 0;
+    int temp = 0;
+    for(int j = 0; j < n-1; j++) {
+        if(j>0) {
+            indices[j*n+offset] = j*n+n;
+            std::cout << indices[j*n+offset] << "|";
+            offset++;
         }
-    }
-
-    for(int j = 0; j < n; j++) {
-        std::cout << "ligne(" << j << ") ";
-        for(int i = 0; i < n*2+2; i++) {
-            std::cout << indices[i+j*n] << ";";
+        for(int i = 0; i < n; i++) {
+            indices[i+j*n+offset] = j*n+i+n;
+            indices[i+j*n+1+offset] = (j-1)*n+i+n;
+            temp = indices[i+j*n+1+offset];
+            std::cout << indices[i+j*n+offset] << ";" << indices[i+j*n+1+offset] << "|";
+            offset++;
+        }
+        if(j<(n-2)) {
+            indices[n+j*n+offset] = temp;
+            std::cout << indices[n+j*n+offset];
+            offset++;
         }
         std::cout << std::endl;
     }
@@ -244,5 +252,5 @@ void GeometryEngine::drawPlaneGeometry(QOpenGLShaderProgram *program)
     program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
 
     // Draw cube geometry using indices from VBO 1
-    glDrawElements(GL_TRIANGLE_STRIP, 34, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, 16*16*16, GL_UNSIGNED_SHORT, 0);
 }
