@@ -53,6 +53,7 @@
 #include <QMouseEvent>
 
 #include <math.h>
+#include <iostream>
 
 MainWidget::MainWidget(QWidget *parent) :
     QOpenGLWidget(parent),
@@ -79,6 +80,27 @@ void MainWidget::mousePressEvent(QMouseEvent *e)
     mousePressPosition = QVector2D(e->localPos());
 }
 
+void MainWidget::keyPressEvent(QKeyEvent *event)
+{
+    if(event->key() == Qt::Key_Q) {
+        cameraPosition += QVector3D(-0.1, 0, 0);
+        update();
+    }
+    if(event->key() == Qt::Key_D) {
+        cameraPosition += QVector3D(+0.1, 0, 0);
+        update();
+    }
+
+    if(event->key() == Qt::Key_Z) {
+        cameraPosition += QVector3D(0, +0.1, 0);
+        update();
+    }
+    if(event->key() == Qt::Key_S) {
+        cameraPosition += QVector3D(0, -0.1, 0);
+        update();
+    }
+}
+
 void MainWidget::mouseReleaseEvent(QMouseEvent *e)
 {
     // Mouse release position - mouse press position
@@ -103,7 +125,7 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *e)
 void MainWidget::timerEvent(QTimerEvent *)
 {
     // Decrease angular speed (friction)
-    angularSpeed *= 0.99;
+    angularSpeed *= 0.9;
 
     // Stop rotation when speed goes below threshold
     if (angularSpeed < 0.01) {
@@ -111,7 +133,6 @@ void MainWidget::timerEvent(QTimerEvent *)
     } else {
         // Update rotation
         rotation = QQuaternion::fromAxisAndAngle(rotationAxis, angularSpeed) * rotation;
-
         // Request an update
         update();
     }
@@ -136,6 +157,7 @@ void MainWidget::initializeGL()
 //! [2]
 
     geometries = new GeometryEngine;
+    cameraPosition = QVector3D(0,0,-5.0);
 
     // Use QBasicTimer because its faster than QTimer
     timer.start(12, this);
@@ -166,8 +188,8 @@ void MainWidget::initShaders()
 void MainWidget::initTextures()
 {
     // Load cube.png image
-    texture = new QOpenGLTexture(QImage(":/cube.png").mirrored());
-
+    //texture = new QOpenGLTexture(QImage(":/cube.png").mirrored());
+    texture = new QOpenGLTexture(QImage(":/heightmap.pgm").mirrored());
     // Set nearest filtering mode for texture minification
     texture->setMinificationFilter(QOpenGLTexture::Nearest);
 
@@ -207,7 +229,7 @@ void MainWidget::paintGL()
 //! [6]
     // Calculate model view transformation
     QMatrix4x4 matrix;
-    matrix.translate(0.0, 0.0, -5.0);
+    matrix.translate(cameraPosition);
     matrix.rotate(rotation);
 
     // Set modelview-projection matrix

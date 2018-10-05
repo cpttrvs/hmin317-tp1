@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>cube.png</file>
+        <file>heightmap.pgm</file>
     </qresource>
 </RCC>

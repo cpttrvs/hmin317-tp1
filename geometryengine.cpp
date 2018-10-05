@@ -71,7 +71,8 @@ GeometryEngine::GeometryEngine()
 
     // Initializes cube geometry and transfers it to VBOs
     //initCubeGeometry();
-    initPlaneGeometry();
+    //initPlaneGeometry();
+    initHeightMapGeometry();
 }
 
 GeometryEngine::~GeometryEngine()
@@ -183,13 +184,13 @@ void GeometryEngine::initPlaneGeometry()
     double incr = 2./n;
     for(int j = 0; j < n; j++) {
         for(int i = 0; i < n; i++) {
-            //vertices[i+j*n] = {QVector3D(i*incr, j*incr, 0.0f), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //sans Z
-            vertices[i+j*n] = {QVector3D(i*incr, j*incr, (i%2)*0.1), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //avec Z
-            std::cout << i+j*n << ";(" << i*(1./(n-1)) << "," <<j*(1./(n-1))<< ")|";
+            //vertices[i+j*n] = {QVector3D(i*incr, j*incr, 0.0f), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //sans Z (cube)
+            vertices[i+j*n] = {QVector3D(i*incr, j*incr, (i%2)*0.1), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //avec Z (cube)
+            //std::cout << i+j*n << ";(" << i*(1./(n-1)) << "," <<j*(1./(n-1))<< ")|";
         }
-        std::cout << std::endl;
+        //std::cout << std::endl;
     }
-    std::cout << "indices" << std::endl;
+    //std::cout << "indices" << std::endl;
     GLushort indices[n*n*n] = {};
     // bg, bd, hg, hd
     // 16, 0, 17, 1, ... n, n : one line
@@ -199,22 +200,82 @@ void GeometryEngine::initPlaneGeometry()
     for(int j = 0; j < n-1; j++) {
         if(j>0) {
             indices[j*n+offset] = j*n+n;
-            std::cout << indices[j*n+offset] << "|";
+            //std::cout << indices[j*n+offset] << "|";
             offset++;
         }
         for(int i = 0; i < n; i++) {
             indices[i+j*n+offset] = j*n+i+n;
             indices[i+j*n+1+offset] = (j-1)*n+i+n;
             temp = indices[i+j*n+1+offset];
-            std::cout << indices[i+j*n+offset] << ";" << indices[i+j*n+1+offset] << "|";
+            //std::cout << indices[i+j*n+offset] << ";" << indices[i+j*n+1+offset] << "|";
             offset++;
         }
         if(j<(n-2)) {
             indices[n+j*n+offset] = temp;
-            std::cout << indices[n+j*n+offset];
+            //std::cout << indices[n+j*n+offset];
             offset++;
         }
-        std::cout << std::endl;
+        //std::cout << std::endl;
+    }
+
+//! [1]
+    // Transfer vertex data to VBO 0
+    arrayBuf.bind();
+    arrayBuf.allocate(vertices, n*n * sizeof(VertexData));
+
+    // Transfer index data to VBO 1
+    indexBuf.bind();
+    indexBuf.allocate(indices, 1348 * sizeof(GLushort));
+//! [1]
+
+}
+
+void GeometryEngine::initHeightMapGeometry()
+{
+    //heightmap
+    //QImage heightmap = new QImage("heightmap.pgm");
+    double color = 0.;
+
+    int n = 16;
+    // For plane, we need 8 vertices on the same plane z=0
+    VertexData vertices[n*n] = {};
+
+    double incr = 2./n;
+    for(int j = 0; j < n; j++) {
+        for(int i = 0; i < n; i++) {
+            //color = heightmap.pixelIndex(i,j).black();
+            std::cout << color << std::endl;
+            vertices[i+j*n] = {QVector3D(i*incr, j*incr, 0.0f), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //sans Z (cube)
+            //std::cout << i+j*n << ";(" << i*(1./(n-1)) << "," <<j*(1./(n-1))<< ")|";
+        }
+        //std::cout << std::endl;
+    }
+    //std::cout << "indices" << std::endl;
+    GLushort indices[n*n*n] = {};
+    // bg, bd, hg, hd
+    // 16, 0, 17, 1, ... n, n : one line
+
+    int offset = 0;
+    int temp = 0;
+    for(int j = 0; j < n-1; j++) {
+        if(j>0) {
+            indices[j*n+offset] = j*n+n;
+            //std::cout << indices[j*n+offset] << "|";
+            offset++;
+        }
+        for(int i = 0; i < n; i++) {
+            indices[i+j*n+offset] = j*n+i+n;
+            indices[i+j*n+1+offset] = (j-1)*n+i+n;
+            temp = indices[i+j*n+1+offset];
+            //std::cout << indices[i+j*n+offset] << ";" << indices[i+j*n+1+offset] << "|";
+            offset++;
+        }
+        if(j<(n-2)) {
+            indices[n+j*n+offset] = temp;
+            //std::cout << indices[n+j*n+offset];
+            offset++;
+        }
+        //std::cout << std::endl;
     }
 
 //! [1]
