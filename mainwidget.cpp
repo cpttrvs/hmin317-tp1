@@ -59,8 +59,9 @@ MainWidget::MainWidget(QWidget *parent, int time) :
     QOpenGLWidget(parent),
     geometries(0),
     texture(0),
-    angularSpeed(0)
+    angularSpeed(1)
 {
+    rotationAxis = QVector3D(0.0, 0.0, 1.0);
     timeFps = time;
 }
 
@@ -68,8 +69,9 @@ MainWidget::MainWidget(int time) :
     QOpenGLWidget(0),
     geometries(0),
     texture(0),
-    angularSpeed(0)
+    angularSpeed(1)
 {
+    rotationAxis = QVector3D(0.0, 0.0, 1.0);
     timeFps = time;
 }
 
@@ -136,20 +138,12 @@ void MainWidget::timerEvent(QTimerEvent *)
 {
     // Decrease angular speed (friction)
     //angularSpeed *= 0.70;
-    angularSpeed = 1.00;
+    angularSpeed = 0.2;
     // Stop rotation when speed goes below threshold
     if (angularSpeed < 0.01) {
         angularSpeed = 0.0;
     } else {
         // Update rotation
-
-        QVector3D from(0.0f, -0.5f, 0.0f);
-        QVector3D to(1.0f, 1.0f, 0.0f);
-        QQuaternion rot = QQuaternion::rotationTo(from, to);
-        float x, y, z, angle;
-        rot.getAxisAndAngle(&x, &y, &z, &angle);
-        rotationAxis = QVector3D(x, y, z);
-
         rotation = QQuaternion::fromAxisAndAngle(rotationAxis, angularSpeed) * rotation;
         // Request an update
         update();
@@ -175,7 +169,7 @@ void MainWidget::initializeGL()
 //! [2]
 
     geometries = new GeometryEngine;
-    cameraPosition = QVector3D(-1.0,-0.5,-5.0);
+    cameraPosition = QVector3D(0.0,0.0,-5.0);
 
     // Use QBasicTimer because its faster than QTimer
     timer.start(timeFps, this);
@@ -248,7 +242,9 @@ void MainWidget::paintGL()
     // Calculate model view transformation
     QMatrix4x4 matrix;
     matrix.translate(cameraPosition);
-    matrix.rotate(rotation);
+
+    QQuaternion framing = QQuaternion::fromAxisAndAngle(QVector3D(1,0,0),-45.0) * rotation;
+    matrix.rotate(framing);
 
     // Set modelview-projection matrix
     program.setUniformValue("mvp_matrix", projection * matrix);

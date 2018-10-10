@@ -70,13 +70,14 @@ int main(int argc, char *argv[])
     MainWidget widget;
     widget.show();
 
-
+    /*
     MainWidget widget10(10);
     widget10.show();
     MainWidget widget100(100);
     widget100.show();
     MainWidget widget1000(1000);
     widget1000.show();
+    */
 
 #else
     QLabel note("OpenGL Support required");
