@@ -185,7 +185,7 @@ void GeometryEngine::initPlaneGeometry()
     for(int j = 0; j < n; j++) {
         for(int i = 0; i < n; i++) {
             //vertices[i+j*n] = {QVector3D(i*incr, j*incr, 0.0f), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //sans Z (cube)
-            vertices[i+j*n] = {QVector3D(i*incr, j*incr, (i%2)*0.1), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //avec Z (cube)
+            vertices[i+j*n] = {QVector3D(i*incr, j*incr, i%2), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //avec Z (cube)
             //std::cout << i+j*n << ";(" << i*(1./(n-1)) << "," <<j*(1./(n-1))<< ")|";
         }
         //std::cout << std::endl;
@@ -232,20 +232,28 @@ void GeometryEngine::initPlaneGeometry()
 
 void GeometryEngine::initHeightMapGeometry()
 {
-    //heightmap
-    //QImage heightmap = new QImage("heightmap.pgm");
-    double color = 0.;
-
     int n = 16;
     // For plane, we need 8 vertices on the same plane z=0
     VertexData vertices[n*n] = {};
 
+    //heightmap
+    std::vector<double> grayLevel;
+    int compteur = 0;
+    QImage img(257, 257, QImage::Format_RGB32);
+    QImageReader reader(":/heightmap-1.png");
+    if (reader.read(&img)) {
+        for(int i = 0; i < n; ++i){
+            for(int j = 0; j < n; ++j){
+                int gray = qGray(img.pixel(i * n, j * n));
+                printf("test(%d;%d) %d = %lf\n",i,j, gray, (double) gray/255);
+                grayLevel.push_back((double) gray/255); //valeurs comprises entre -1 et 1
+            }
+        }
+    }
     double incr = 2./n;
     for(int j = 0; j < n; j++) {
         for(int i = 0; i < n; i++) {
-            //color = heightmap.pixelIndex(i,j).black();
-            std::cout << color << std::endl;
-            vertices[i+j*n] = {QVector3D(i*incr, j*incr, 0.0f), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //sans Z (cube)
+            vertices[i+j*n] = {QVector3D(i*incr, j*incr, grayLevel[compteur++]), QVector2D(i*(1./(n-1)), j*(1./(n-1)))};
             //std::cout << i+j*n << ";(" << i*(1./(n-1)) << "," <<j*(1./(n-1))<< ")|";
         }
         //std::cout << std::endl;

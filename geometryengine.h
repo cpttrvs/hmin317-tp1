@@ -54,6 +54,10 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
+#include <QImageReader>
+#include <QImage>
+#include <iostream>
+#include <QColor>
 
 class GeometryEngine : protected QOpenGLFunctions
 {

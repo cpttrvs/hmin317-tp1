@@ -69,7 +69,8 @@ class MainWidget : public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 
 public:
-    explicit MainWidget(QWidget *parent = 0);
+    explicit MainWidget(QWidget *parent = 0, int time = 1);
+    MainWidget(int time);
     ~MainWidget();
 
 protected:
@@ -99,6 +100,8 @@ private:
     qreal angularSpeed;
     QQuaternion rotation;
     QVector3D cameraPosition;
+
+    int timeFps;
 };
 
 #endif // MAINWIDGET_H
