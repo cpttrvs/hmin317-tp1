@@ -67,11 +67,11 @@ public:
 
     void drawCubeGeometry(QOpenGLShaderProgram *program);
     void drawPlaneGeometry(QOpenGLShaderProgram *program);
+    void initHeightMapGeometry(int season);
 
 private:
     void initCubeGeometry();
     void initPlaneGeometry();
-    void initHeightMapGeometry();
 
     QOpenGLBuffer arrayBuf;
     QOpenGLBuffer indexBuf;

@@ -73,7 +73,7 @@ GeometryEngine::GeometryEngine()
     // Initializes cube geometry and transfers it to VBOs
     //initCubeGeometry();
     //initPlaneGeometry();
-    initHeightMapGeometry();
+    initHeightMapGeometry(0);
 }
 
 GeometryEngine::~GeometryEngine()
@@ -234,8 +234,10 @@ void GeometryEngine::initPlaneGeometry()
 
 }
 
-void GeometryEngine::initHeightMapGeometry()
+void GeometryEngine::initHeightMapGeometry(int season)
 {
+    QVector3D seasonColor;
+
     nbVertices = 64;
     // For plane, we need 8 vertices on the same plane z=0
     VertexData vertices[nbVertices*nbVertices] = {};
@@ -260,9 +262,30 @@ void GeometryEngine::initHeightMapGeometry()
     double incr = 2./nbVertices;
     for(int j = 0; j < nbVertices; j++) {
         for(int i = 0; i < nbVertices; i++) {
+            switch(season) {
+            case 0: //summer : light on ground
+                seasonColor = QVector3D(1.0, 1.0, grayLevel[compteur]);
+                break;
+            case 1: //fall : orange and red on ground
+                seasonColor = QVector3D(1.0 * ( 1 - grayLevel[compteur]), 0.5 * (1 - grayLevel[compteur]), grayLevel[compteur]);
+                break;
+            case 2: //winter : white on ground
+                if(grayLevel[compteur] <= 0.5)
+                    seasonColor = QVector3D(1.0 * (1 - grayLevel[compteur]), 1.0* (1 - grayLevel[compteur]), 1.0* (1 - grayLevel[compteur]));
+                else
+                    seasonColor = QVector3D(1.0 * grayLevel[compteur], 1.0* grayLevel[compteur], 1.0* grayLevel[compteur]);
+                break;
+            case 3: //spring : light and green on ground
+                seasonColor = QVector3D(grayLevel[compteur], 1.0, grayLevel[compteur]);
+                break;
+            default:
+                seasonColor = QVector3D(1.0, 1.0, 1.0);
+                break;
+            }
+
             vertices[i+j*nbVertices] = {QVector3D(i*incr, j*incr, grayLevel[compteur++]),
                                         QVector2D(i*(1./(nbVertices-1)), j*(1./(nbVertices-1))),
-                                        QVector3D(1.0,grayLevel[compteur-1],grayLevel[compteur-1])};
+                                        QVector3D(seasonColor[0], seasonColor[1], seasonColor[2])};
 
             //std::cout << i+j*n << ";(" << i*(1./(n-1)) << "," <<j*(1./(n-1))<< ")|";
         }

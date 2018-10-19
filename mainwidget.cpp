@@ -169,6 +169,7 @@ void MainWidget::initializeGL()
 //! [2]
 
     geometries = new GeometryEngine;
+    geometries->initHeightMapGeometry(season);
     cameraPosition = QVector3D(0.0,0.0,-5.0);
 
     // Use QBasicTimer because its faster than QTimer
@@ -262,5 +263,6 @@ void MainWidget::paintGL()
 
 void MainWidget::changeSeason() {
     season = (season + 1) % 4;
+    geometries->initHeightMapGeometry(season);
     emit seasonChanged(season);
 }
