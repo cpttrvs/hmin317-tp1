@@ -13,6 +13,9 @@ attribute vec3 a_color;
 varying vec2 v_texcoord;
 varying vec3 v_color;
 
+uniform vec3 light_pos;
+uniform vec3 light_color;
+
 //! [0]
 void main()
 {
