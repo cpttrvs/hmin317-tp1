@@ -7,11 +7,13 @@ SOURCES += main.cpp
 
 SOURCES += \
     mainwidget.cpp \
-    geometryengine.cpp
+    geometryengine.cpp \
+    calendar.cpp
 
 HEADERS += \
     mainwidget.h \
-    geometryengine.h
+    geometryengine.h \
+    calendar.h
 
 RESOURCES += \
     shaders.qrc \

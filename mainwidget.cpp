@@ -200,8 +200,9 @@ void MainWidget::initShaders()
 void MainWidget::initTextures()
 {
     // Load cube.png image
-    texture = new QOpenGLTexture(QImage(":/cube.png").mirrored());
-    //texture = new QOpenGLTexture(QImage(":/heightmap-1.png").mirrored());
+    //texture = new QOpenGLTexture(QImage(":/cube.png").mirrored());
+
+    texture = new QOpenGLTexture(QImage(":/heightmap-2.png").mirrored());
     // Set nearest filtering mode for texture minification
     texture->setMinificationFilter(QOpenGLTexture::Nearest);
 
@@ -257,4 +258,9 @@ void MainWidget::paintGL()
     //geometries->drawCubeGeometry(&program);
     // Draw plane geometry
     geometries->drawPlaneGeometry(&program);
+}
+
+void MainWidget::changeSeason() {
+    season = (season + 1) % 4;
+    emit seasonChanged(season);
 }

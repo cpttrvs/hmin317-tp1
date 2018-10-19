@@ -61,6 +61,7 @@
 #include <QBasicTimer>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
+#include <QObject>
 
 class GeometryEngine;
 
@@ -72,6 +73,15 @@ public:
     explicit MainWidget(QWidget *parent = 0, int time = 1);
     MainWidget(int time);
     ~MainWidget();
+
+    int getSeason() const { return season; }
+    void setSeason(int v) { season = v; }
+
+public slots:
+    void changeSeason();
+
+signals:
+    void seasonChanged(int newSeason);
 
 protected:
     void mousePressEvent(QMouseEvent *e) override;
@@ -102,6 +112,7 @@ private:
     QVector3D cameraPosition;
 
     int timeFps;
+    int season; //0 été, 1 automne, 2 hiver, 3 printemps
 };
 
 #endif // MAINWIDGET_H

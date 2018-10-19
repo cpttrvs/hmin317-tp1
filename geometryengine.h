@@ -75,6 +75,8 @@ private:
 
     QOpenGLBuffer arrayBuf;
     QOpenGLBuffer indexBuf;
+
+    int nbVertices;
 };
 
 #endif // GEOMETRYENGINE_H

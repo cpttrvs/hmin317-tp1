@@ -58,6 +58,7 @@ struct VertexData
 {
     QVector3D position;
     QVector2D texCoord;
+    QVector3D color;
 };
 
 GeometryEngine::GeometryEngine()
@@ -82,7 +83,7 @@ GeometryEngine::~GeometryEngine()
 }
 
 void GeometryEngine::initCubeGeometry()
-{
+{/*
     // For cube we would need only 8 vertices but we have to
     // duplicate vertex for each face because texture coordinate
     // is different.
@@ -147,6 +148,7 @@ void GeometryEngine::initCubeGeometry()
     // Transfer index data to VBO 1
     indexBuf.bind();
     indexBuf.allocate(indices, 34 * sizeof(GLushort));
+    */
 }
 
 void GeometryEngine::drawCubeGeometry(QOpenGLShaderProgram *program)
@@ -185,7 +187,9 @@ void GeometryEngine::initPlaneGeometry()
     for(int j = 0; j < n; j++) {
         for(int i = 0; i < n; i++) {
             //vertices[i+j*n] = {QVector3D(i*incr, j*incr, 0.0f), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //sans Z (cube)
-            vertices[i+j*n] = {QVector3D(i*incr, j*incr, i%2), QVector2D(i*(1./(n-1)), j*(1./(n-1)))}; //avec Z (cube)
+            vertices[i+j*n] = {QVector3D(i*incr, j*incr, i%2),
+                               QVector2D(i*(1./(n-1)), j*(1./(n-1))),
+                               QVector3D(1.0, 1.0, 1.0)}; //avec Z (cube)
             //std::cout << i+j*n << ";(" << i*(1./(n-1)) << "," <<j*(1./(n-1))<< ")|";
         }
         //std::cout << std::endl;
@@ -232,56 +236,60 @@ void GeometryEngine::initPlaneGeometry()
 
 void GeometryEngine::initHeightMapGeometry()
 {
-    int n = 16;
+    nbVertices = 64;
     // For plane, we need 8 vertices on the same plane z=0
-    VertexData vertices[n*n] = {};
+    VertexData vertices[nbVertices*nbVertices] = {};
 
     //heightmap
     std::vector<double> grayLevel;
     int compteur = 0;
     QImage img(4096, 4096, QImage::Format_RGB32);
     QImageReader reader(":/heightmap-2.png");
-    double ratio = img.size().height()/n;
+    //QImage img(257, 257, QImage::Format_RGB32);
+    //QImageReader reader(":/heightmap-1.png");
+    double ratio = img.size().height()/nbVertices;
     if (reader.read(&img)) {
-        for(int i = 0; i < n; ++i){
-            for(int j = 0; j < n; ++j){
+        for(int i = 0; i < nbVertices; ++i){
+            for(int j = 0; j < nbVertices; ++j){
                 int gray = qGray(img.pixel(i * ratio, j * ratio));
-                printf("test(%d;%d) %d = %lf\n",i,j, gray, (double) gray/255);
+                //printf("test(%d;%d) %d = %lf\n",i,j, gray, (double) gray/255);
                 grayLevel.push_back((double) gray/255); //valeurs comprises entre -1 et 1
             }
         }
     }
-    double incr = 2./n;
-    for(int j = 0; j < n; j++) {
-        for(int i = 0; i < n; i++) {
-            vertices[i+j*n] = {QVector3D(i*incr, j*incr, grayLevel[compteur++]), QVector2D(i*(1./(n-1)), j*(1./(n-1)))};
+    double incr = 2./nbVertices;
+    for(int j = 0; j < nbVertices; j++) {
+        for(int i = 0; i < nbVertices; i++) {
+            vertices[i+j*nbVertices] = {QVector3D(i*incr, j*incr, grayLevel[compteur++]),
+                                        QVector2D(i*(1./(nbVertices-1)), j*(1./(nbVertices-1))),
+                                        QVector3D(1.0,grayLevel[compteur-1],grayLevel[compteur-1])};
 
             //std::cout << i+j*n << ";(" << i*(1./(n-1)) << "," <<j*(1./(n-1))<< ")|";
         }
         //std::cout << std::endl;
     }
     //std::cout << "indices" << std::endl;
-    GLushort indices[n*n*n] = {};
+    GLushort indices[nbVertices*nbVertices*nbVertices] = {};
     // bg, bd, hg, hd
     // 16, 0, 17, 1, ... n, n : one line
 
     int offset = 0;
     int temp = 0;
-    for(int j = 0; j < n-1; j++) {
+    for(int j = 0; j < nbVertices-1; j++) {
         if(j>0) {
-            indices[j*n+offset] = j*n+n;
+            indices[j*nbVertices+offset] = j*nbVertices+nbVertices;
             //std::cout << indices[j*n+offset] << "|";
             offset++;
         }
-        for(int i = 0; i < n; i++) {
-            indices[i+j*n+offset] = j*n+i+n;
-            indices[i+j*n+1+offset] = (j-1)*n+i+n;
-            temp = indices[i+j*n+1+offset];
+        for(int i = 0; i < nbVertices; i++) {
+            indices[i+j*nbVertices+offset] = j*nbVertices+i+nbVertices;
+            indices[i+j*nbVertices+1+offset] = (j-1)*nbVertices+i+nbVertices;
+            temp = indices[i+j*nbVertices+1+offset];
             //std::cout << indices[i+j*n+offset] << ";" << indices[i+j*n+1+offset] << "|";
             offset++;
         }
-        if(j<(n-2)) {
-            indices[n+j*n+offset] = temp;
+        if(j<(nbVertices-2)) {
+            indices[nbVertices+j*nbVertices+offset] = temp;
             //std::cout << indices[n+j*n+offset];
             offset++;
         }
@@ -291,11 +299,11 @@ void GeometryEngine::initHeightMapGeometry()
 //! [1]
     // Transfer vertex data to VBO 0
     arrayBuf.bind();
-    arrayBuf.allocate(vertices, n*n * sizeof(VertexData));
+    arrayBuf.allocate(vertices, nbVertices*nbVertices * sizeof(VertexData));
 
     // Transfer index data to VBO 1
     indexBuf.bind();
-    indexBuf.allocate(indices, 1348 * sizeof(GLushort));
+    indexBuf.allocate(indices, nbVertices*nbVertices*nbVertices * sizeof(GLushort));
 //! [1]
 
 }
@@ -322,6 +330,12 @@ void GeometryEngine::drawPlaneGeometry(QOpenGLShaderProgram *program)
     program->enableAttributeArray(texcoordLocation);
     program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
 
+    offset += sizeof(QVector2D);
+    //color
+    int colorLocation = program->attributeLocation("a_color");
+    program->enableAttributeArray(colorLocation);
+    program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+
     // Draw cube geometry using indices from VBO 1
-    glDrawElements(GL_TRIANGLE_STRIP, 16*16*16, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLE_STRIP, nbVertices*nbVertices*nbVertices, GL_UNSIGNED_SHORT, 0);
 }

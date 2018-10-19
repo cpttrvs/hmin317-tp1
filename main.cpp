@@ -54,6 +54,7 @@
 
 #ifndef QT_NO_OPENGL
 #include "mainwidget.h"
+#include "calendar.h"
 #endif
 
 int main(int argc, char *argv[])
@@ -67,8 +68,38 @@ int main(int argc, char *argv[])
     app.setApplicationName("cube");
     app.setApplicationVersion("0.1");
 #ifndef QT_NO_OPENGL
-    MainWidget widget;
-    widget.show();
+    Calendar calendar(5);
+
+    MainWidget widget1; widget1.setSeason(0);
+    widget1.show();
+    MainWidget widget2; widget2.setSeason(1);
+    widget2.show();
+    MainWidget widget3; widget3.setSeason(2);
+    widget3.show();
+    MainWidget widget4; widget4.setSeason(3);
+    widget4.show();
+
+    //calendar to widgets
+    QObject::connect(&calendar, SIGNAL(seasonChanged()),
+                     &widget1, SLOT(changeSeason()));
+    QObject::connect(&calendar, SIGNAL(seasonChanged()),
+                     &widget2, SLOT(changeSeason()));
+    QObject::connect(&calendar, SIGNAL(seasonChanged()),
+                     &widget3, SLOT(changeSeason()));
+    QObject::connect(&calendar, SIGNAL(seasonChanged()),
+                     &widget4, SLOT(changeSeason()));
+
+    //widgets to calendar
+    QObject::connect(&widget1, SIGNAL(seasonChanged(int)),
+                     &calendar, SLOT(season(int)));
+    QObject::connect(&widget2, SIGNAL(seasonChanged(int)),
+                     &calendar, SLOT(season(int)));
+    QObject::connect(&widget3, SIGNAL(seasonChanged(int)),
+                     &calendar, SLOT(season(int)));
+    QObject::connect(&widget4, SIGNAL(seasonChanged(int)),
+                     &calendar, SLOT(season(int)));
+
+    calendar.startCalendar();
 
     /*
     MainWidget widget10(10);
