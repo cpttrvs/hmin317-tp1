@@ -19,6 +19,11 @@ RESOURCES += \
     shaders.qrc \
     textures.qrc
 
+CONFIG += c++11
+LIBS   += -lopengl32
+LIBS   += -lglu32
+LIBS   += -lglut32
+
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/opengl/cube
 INSTALLS += target
